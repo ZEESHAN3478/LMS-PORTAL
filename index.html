@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeeshan Ahmed University | Official Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ------------------- CSS STYLING ------------------- */
+        :root {
+            --primary: #0f172a;    /* Dark Blue */
+            --accent: #2563eb;     /* Bright Blue */
+            --gold: #f59e0b;       /* Gold for Branding */
+            --bg: #f1f5f9;
+            --text: #334155;
+            --white: #ffffff;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); overflow-x: hidden; font-size: 14px; }
+
+        /* --- LOGIN SCREEN --- */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-box {
+            background: rgba(255, 255, 255, 0.95); padding: 50px; border-radius: 20px;
+            width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
+        }
+        .login-box h1 { color: var(--primary); font-size: 28px; margin-bottom: 5px; font-weight: 800; }
+        .login-box p { color: #64748b; margin-bottom: 30px; }
+
+        .inp-field {
+            width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #cbd5e1;
+            border-radius: 10px; font-size: 15px; outline: none; transition: 0.3s;
+        }
+        .inp-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+
+        .btn-login {
+            width: 100%; padding: 15px; background: var(--accent); color: white;
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+            font-size: 16px; margin-top: 10px; transition: 0.3s;
+        }
+        .btn-login:hover { background: var(--primary); }
+
+        /* --- MAIN APP --- */
+        #app-container { display: none; min-height: 100vh; display: flex; }
+
+        /* Sidebar */
+        aside {
+            width: 280px; background: var(--primary); color: white;
+            height: 100vh; position: sticky; top: 0; display: flex; flex-direction: column;
+        }
+        .brand { padding: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .brand h3 { color: var(--gold); letter-spacing: 1px; }
+
+        .nav-list { flex: 1; padding: 20px 10px; overflow-y: auto; }
+        .nav-item {
+            padding: 14px 20px; margin-bottom: 5px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; color: #cbd5e1; transition: 0.2s;
+        }
+        .nav-item i { margin-right: 15px; width: 20px; text-align: center; }
+        .nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
+
+        .user-panel { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; background: var(--gold); color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; }
+
+        /* Content Area */
+        main { flex: 1; display: flex; flex-direction: column; }
+        header {
+            background: white; padding: 20px 40px; border-bottom: 1px solid #e2e8f0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .content-body { padding: 40px; overflow-y: auto; height: calc(100vh - 80px); }
+
+        .page-section { display: none; animation: slideUp 0.4s ease; }
+        .active-section { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Components */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-bottom: 4px solid var(--accent); }
+
+        .table-box { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8fafc; padding: 15px; text-align: left; font-size: 13px; text-transform: uppercase; color: #64748b; font-weight: 700; }
+        td { padding: 15px; border-top: 1px solid #f1f5f9; color: #334155; }
+
+        .admin-controls { background: #eff6ff; border: 2px solid #bfdbfe; padding: 25px; border-radius: 15px; margin-bottom: 30px; }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .form-control { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; }
+
+        .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .bg-green { background: #dcfce7; color: #166534; }
+        .bg-red { background: #fee2e2; color: #991b1b; }
+        .bg-yellow { background: #fef3c7; color: #92400e; }
+    </style>
+</head>
+<body>
+
+<div id="login-overlay">
+    <div class="login-box">
+        <i class="fas fa-university fa-3x" style="color: var(--primary); margin-bottom: 15px;"></i>
+        <h1>Z.A. University</h1>
+        <p>Enter your ID to access the LMS</p>
+
+        <input type="text" id="userid" class="inp-field" placeholder="ID (e.g., STU001 or admin)">
+        <input type="password" id="userpass" class="inp-field" placeholder="Password (e.g., pass001)">
+
+        <button class="btn-login" onclick="handleLogin()">Secure Login</button>
+        <p id="error-msg" style="color: var(--danger); margin-top: 15px; font-weight: bold; font-size: 13px;"></p>
+    </div>
+</div>
+
+<div id="app-container">
+
+    <aside>
+        <div class="brand">
+            <h3>ZEESHAN AHMED</h3>
+            <small style="color: #94a3b8;">UNIVERSITY SYSTEM</small>
+        </div>
+        <div class="nav-list" id="sidebar-menu">
+        </div>
+        <div class="user-panel">
+            <div class="user-avatar" id="u-initial">U</div>
+            <div style="flex:1;">
+                <div id="u-name" style="font-weight: bold; font-size: 13px;">User</div>
+                <div id="u-role" style="font-size: 11px; color: #94a3b8;">Student</div>
+            </div>
+            <button onclick="logout()" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-power-off"></i></button>
+        </div>
+    </aside>
+
+    <main>
+        <header>
+            <h2 id="page-header">Dashboard</h2>
+            <div style="color: #64748b; font-size: 13px;" id="current-date"></div>
+        </header>
+
+        <div class="content-body">
+
+            <div id="view-dashboard" class="page-section active-section">
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>CGPA</h3><h2 id="st-cgpa">3.50</h2></div>
+                    <div class="stat-card"><h3>Attendance</h3><h2 id="st-att">85%</h2></div>
+                    <div class="stat-card"><h3>Fee Status</h3><h2 style="color:var(--success)">PAID</h2></div>
+                </div>
+
+                <div class="table-box" style="padding: 25px;">
+                    <h3><i class="fas fa-bell" style="color: var(--gold);"></i> Latest Notifications</h3>
+                    <ul id="notif-list" style="list-style: none; margin-top: 15px; padding: 0;"></ul>
+                </div>
+            </div>
+
+            <div id="view-results" class="page-section">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2>Academic Transcript</h2>
+                    <select class="form-control" style="max-width: 200px;" id="sem-selector" onchange="renderTranscript()">
+                        <option value="Sem1">Semester 1</option>
+                        <option value="Sem2">Semester 2</option>
+                        <option value="Sem3">Semester 3</option>
+                    </select>
+                </div>
+                <div class="table-box">
+                    <table>
+                        <thead><tr><th>Subject Code</th><th>Course Title</th><th>Marks</th><th>Grade</th><th>Status</th></tr></thead>
+                        <tbody id="result-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-services" class="page-section">
+                <div class="stats-grid">
+                    <div class="stat-card" style="border-left: 5px solid var(--accent);">
+                        <h3><i class="fas fa-book-open"></i> Course Selection</h3>
+                        <p style="font-size: 12px; margin: 10px 0; color: #666;">Select electives for Spring 2026.</p>
+                        <div id="course-list-ui"></div>
+                        <button class="btn-login" style="padding: 8px; margin-top: 10px;" onclick="alert('Courses Saved!')">Submit Selection</button>
+                    </div>
+
+                    <div class="stat-card" style="border-left: 5px solid var(--gold);">
+                        <h3><i class="fas fa-graduation-cap"></i> Scholarship</h3>
+                        <p>Status: <b id="scholarship-status">Not Applied</b></p>
+                        <button class="btn-login" style="background: var(--success); margin-top: 15px;" onclick="applyScholarship()">Apply Now</button>
+                    </div>
+
+                    <div class="stat-card" style="border-left: 5px solid var(--danger);">
+                        <h3><i class="fas fa-print"></i> Exam Slip</h3>
+                        <p>Mid Term Exams</p>
+                        <button class="btn-login" style="background: #334155; margin-top: 15px;" onclick="alert('Downloading PDF...')">Download PDF</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-admin" class="page-section">
+                <div class="admin-controls">
+                    <h2><i class="fas fa-cogs"></i> Master Control Panel</h2>
+                    <p>Manage Results, Attendance and Announcements for 100 Students.</p>
+
+                    <div class="form-row">
+                        <select id="adm-stu-list" class="form-control" style="flex: 2;"></select>
+                        <select id="adm-action" class="form-control" onchange="toggleAdminUI()">
+                            <option value="result">Update Result</option>
+                            <option value="attendance">Update Attendance</option>
+                            <option value="notify">Send Notification</option>
+                            <option value="scholarship">Approve Scholarship</option>
+                        </select>
+                    </div>
+
+                    <div id="adm-input-area" class="form-row">
+                    </div>
+
+                    <button class="btn-login" style="width: auto; padding: 10px 30px; margin-top: 15px;" onclick="processAdminAction()">Execute Action</button>
+                </div>
+
+                <h3>Student Database Overview</h3>
+                <div class="table-box">
+                    <table id="admin-table">
+                        <thead><tr><th>ID</th><th>Name</th><th>CGPA</th><th>Scholarship</th><th>Action</th></tr></thead>
+                        <tbody id="admin-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<script>
+    // --- CONFIGURATION ---
+    const DB_KEY = 'zee_lms_v_final_fixed'; // Unique key to force fresh data
+
+    // --- 1. DATABASE GENERATOR (Runs Once) ---
+    function initSystem() {
+        // Check if DB exists, if not create fresh
+        if (!localStorage.getItem(DB_KEY)) {
+            console.log("Creating Fresh Database...");
+            const db = { students: {} };
+            const names = ["Ali", "Ahmed", "Sara", "Zain", "Bilal", "Hira", "Usman", "Fatima", "Hassan", "Ayesha"];
+
+            for (let i = 1; i <= 100; i++) {
+                let id = "STU" + String(i).padStart(3, '0');
+                db.students[id] = {
+                    id: id,
+                    pass: "pass" + String(i).padStart(3, '0'), // Password logic
+                    name: names[(i - 1) % 10] + " " + (i % 2 == 0 ? "Khan" : "Sheikh"),
+                    cgpa: (2.0 + Math.random() * 2.0).toFixed(2),
+                    attendance: Math.floor(Math.random() * 25) + 75,
+                    scholarship: "None",
+                    notifications: ["Welcome to Zeeshan Ahmed University Portal"],
+                    results: {
+                        "Sem1": [
+                            { sub: "Programming Fund.", marks: 85, grade: "A" },
+                            { sub: "English Comp.", marks: 72, grade: "B" }
+                        ],
+                        "Sem2": [],
+                        "Sem3": []
+                    }
+                };
+            }
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+        }
+    }
+
+    // Execute Initialization immediately
+    initSystem();
+
+    // --- GLOBAL VARIABLES ---
+    let db = JSON.parse(localStorage.getItem(DB_KEY));
+    let currentUser = null;
+
+    // --- 2. LOGIN LOGIC ---
+    // Allow Enter Key
+    document.getElementById('userpass').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') handleLogin();
+    });
+
+    function handleLogin() {
+        let id = document.getElementById('userid').value.trim().toUpperCase(); // Auto Uppercase
+        let pass = document.getElementById('userpass').value.trim();
+        let errorMsg = document.getElementById('error-msg');
+
+        // Refresh DB from storage
+        db = JSON.parse(localStorage.getItem(DB_KEY));
+
+        if (id === "ADMIN" && pass === "admin123") {
+            loadSession({ role: 'admin', name: 'Registrar Office', id: 'ADMIN' });
+        } else if (db.students[id] && db.students[id].pass === pass) {
+            loadSession({ ...db.students[id], role: 'student' });
+        } else {
+            errorMsg.innerText = "❌ Login Failed! Use STU001 / pass001";
+            errorMsg.style.display = 'block';
+        }
+    }
+
+    function loadSession(user) {
+        currentUser = user;
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+
+        // Sidebar Info
+        document.getElementById('u-name').innerText = user.name;
+        document.getElementById('u-role').innerText = user.role.toUpperCase();
+        document.getElementById('u-initial').innerText = user.name.charAt(0);
+
+        const menu = document.getElementById('sidebar-menu');
+        menu.innerHTML = "";
+
+        if (user.role === 'admin') {
+            menu.innerHTML = `
+                <div class="nav-item active" onclick="switchPage('admin', 'Admin Console')"><i class="fas fa-user-shield"></i> Admin Panel</div>
+                <div class="nav-item" onclick="switchPage('dashboard', 'Student View')"><i class="fas fa-eye"></i> Student View Mockup</div>
+            `;
+            initAdminPanel();
+            switchPage('admin', 'Admin Console');
+        } else {
+            menu.innerHTML = `
+                <div class="nav-item active" onclick="switchPage('dashboard', 'Dashboard')"><i class="fas fa-home"></i> Dashboard</div>
+                <div class="nav-item" onclick="switchPage('results', 'Results & Transcript')"><i class="fas fa-file-invoice"></i> My Results</div>
+                <div class="nav-item" onclick="switchPage('services', 'Services & Forms')"><i class="fas fa-concierge-bell"></i> Services</div>
+            `;
+            loadStudentData();
+            switchPage('dashboard', 'Dashboard');
+        }
+    }
+
+    function logout() {
+        location.reload(); // Simple reload to logout
+    }
+
+    // --- 3. PAGE NAVIGATION ---
+    function switchPage(pageId, title) {
+        document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active-section'));
+        document.getElementById('view-' + pageId).classList.add('active-section');
+        document.getElementById('page-header').innerText = title;
+
+        // Sidebar Active State
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
+    // --- 4. STUDENT FEATURES ---
+    function loadStudentData() {
+        // Stats
+        document.getElementById('st-cgpa').innerText = currentUser.cgpa;
+        document.getElementById('st-att').innerText = currentUser.attendance + "%";
+
+        // Notifications
+        const notifList = document.getElementById('notif-list');
+        notifList.innerHTML = currentUser.notifications.map(n =>
+            `<li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 13px;">🔔 ${n}</li>`
+        ).join('');
+
+        // Scholarship
+        const scholStatus = document.getElementById('scholarship-status');
+        scholStatus.innerText = currentUser.scholarship;
+        scholStatus.style.color = currentUser.scholarship === 'Approved' ? 'var(--success)' : 'orange';
+
+        // Courses Checkboxes
+        document.getElementById('course-list-ui').innerHTML = `
+            <label><input type="checkbox"> Web Engineering</label><br>
+            <label><input type="checkbox"> Artificial Intelligence</label><br>
+            <label><input type="checkbox"> Cyber Security</label>
+        `;
+
+        renderTranscript();
+    }
+
+    function renderTranscript() {
+        const sem = document.getElementById('sem-selector').value;
+        const tbody = document.getElementById('result-tbody');
+        const data = currentUser.results[sem] || [];
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px;">No results declared for ${sem} yet.</td></tr>`;
+        } else {
+            tbody.innerHTML = data.map(r => `
+                <tr>
+                    <td>CS-${Math.floor(Math.random()*100)+100}</td>
+                    <td>${r.sub}</td>
+                    <td>${r.marks}</td>
+                    <td><span class="badge ${r.marks >= 50 ? 'bg-green' : 'bg-red'}">${r.grade}</span></td>
+                    <td>${r.marks >= 50 ? 'Pass' : 'Fail'}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    function applyScholarship() {
+        if (currentUser.scholarship === 'Approved') return alert("Already Approved!");
+        db.students[currentUser.id].scholarship = "Pending";
+        saveDB();
+        currentUser = db.students[currentUser.id]; // Refresh local user
+        loadStudentData(); // Refresh UI
+        alert("Application Submitted to Admin!");
+    }
+
+    // --- 5. ADMIN FEATURES ---
+    function initAdminPanel() {
+        const list = document.getElementById('adm-stu-list');
+        const tbody = document.getElementById('admin-tbody');
+
+        // Populate Dropdown
+        list.innerHTML = Object.keys(db.students).map(id =>
+            `<option value="${id}">${id} - ${db.students[id].name}</option>`
+        ).join('');
+
+        // Populate Table (Top 15)
+        tbody.innerHTML = Object.keys(db.students).slice(0, 15).map(id => {
+            let s = db.students[id];
+            return `<tr>
+                <td>${s.id}</td>
+                <td>${s.name}</td>
+                <td>${s.cgpa}</td>
+                <td><span class="badge ${s.scholarship==='Approved'?'bg-green':'bg-yellow'}">${s.scholarship}</span></td>
+                <td><button onclick="alert('View Profile')" style="cursor:pointer;">View</button></td>
+            </tr>`;
+        }).join('');
+
+        toggleAdminUI(); // Set initial inputs
+    }
+
+    function toggleAdminUI() {
+        const action = document.getElementById('adm-action').value;
+        const area = document.getElementById('adm-input-area');
+
+        if (action === 'result') {
+            area.innerHTML = `
+                <select id="adm-sem" class="form-control"><option value="Sem1">Sem 1</option><option value="Sem2">Sem 2</option></select>
+                <input type="text" id="adm-sub" class="form-control" placeholder="Subject Name">
+                <input type="number" id="adm-marks" class="form-control" placeholder="Marks (0-100)">
+            `;
+        } else if (action === 'notify') {
+            area.innerHTML = `<input type="text" id="adm-msg" class="form-control" placeholder="Type message for student..." style="width:100%">`;
+        } else if (action === 'attendance') {
+            area.innerHTML = `<input type="number" id="adm-att" class="form-control" placeholder="New Attendance %">`;
+        } else {
+            area.innerHTML = `<div style="padding:10px; color:#666;">Click Execute to Approve Scholarship</div>`;
+        }
+    }
+
+    function processAdminAction() {
+        const sid = document.getElementById('adm-stu-list').value;
+        const action = document.getElementById('adm-action').value;
+
+        if (action === 'scholarship') {
+            db.students[sid].scholarship = "Approved";
+            alert(`Scholarship Approved for ${sid}`);
+        } else if (action === 'notify') {
+            const msg = document.getElementById('adm-msg').value;
+            if(msg) db.students[sid].notifications.push(msg);
+            else return alert("Type a message!");
+        } else if (action === 'attendance') {
+            const att = document.getElementById('adm-att').value;
+            if(att) db.students[sid].attendance = att;
+        } else if (action === 'result') {
+            const sem = document.getElementById('adm-sem').value;
+            const sub = document.getElementById('adm-sub').value;
+            const marks = document.getElementById('adm-marks').value;
+
+            if (!db.students[sid].results[sem]) db.students[sid].results[sem] = [];
+            db.students[sid].results[sem].push({
+                sub: sub, marks: marks, grade: marks >= 50 ? 'A' : 'F'
+            });
+            alert("Result Uploaded Successfully!");
+        }
+
+        saveDB();
+        initAdminPanel(); // Refresh Table
+    }
+
+    function saveDB() {
+        localStorage.setItem(DB_KEY, JSON.stringify(db));
+    }
+
+    // Date Display
+    document.getElementById('current-date').innerText = new Date().toDateString();
+
+</script>
+</body>
+</html>
